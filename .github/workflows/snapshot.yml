@@ -5,20 +5,39 @@ on:
   workflow_dispatch: {}
 permissions:
   contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Install deps
-        run: npm i firebase-admin
-      - name: Export Firestore -> snapshot.json
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Clean npmrc (avoid registry issues)
+        run: rm -f ~/.npmrc
+
+      - name: Install deps (retry)
+        run: |
+          n=0
+          until [ $n -ge 3 ]; do
+            npm i firebase-admin --no-audit --no-fund && break
+            n=$((n+1)); echo "retry $n/3..."; sleep 10
+          done
+
+      - name: Export Firestore -> snapshot.json (retry)
         env:
           SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-        run: node export.mjs
+        run: |
+          n=0
+          until [ $n -ge 3 ]; do
+            node export.mjs && break
+            n=$((n+1)); echo "retry $n/3..."; sleep 5
+          done
+
       - name: Commit & push if changed
         run: |
           git config user.name "github-actions[bot]"
