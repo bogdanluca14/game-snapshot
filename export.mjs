@@ -34,16 +34,14 @@ function asLevel(x) {
 async function getApproved() {
   const snap = await db
     .collection("submissions")
+    .where("status", "==", true)
     .orderBy("createdAt", "desc")
-    .limit(APPROVED_LIMIT * 2)
+    .limit(APPROVED_LIMIT)
     .get();
 
   const list = [];
-  snap.forEach(d => {
-    const x = d.data();
-    if (x && x.status === true) list.push(asLevel(x));
-  });
-  return list.slice(0, APPROVED_LIMIT);
+  snap.forEach(d => list.push(asLevel(d.data())));
+  return list;
 }
 
 async function getStandings() {
