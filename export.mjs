@@ -6,7 +6,7 @@ admin.initializeApp({ credential: admin.credential.cert(creds) });
 const db = admin.firestore();
 
 const APPROVED_LIMIT = 100;
-const STANDINGS_LIMIT = 25;
+const STANDINGS_LIMIT = 24;
 
 function toTicks(date) {
   return date ? date.getTime() * 10000 + 621355968000000000 : 0;
